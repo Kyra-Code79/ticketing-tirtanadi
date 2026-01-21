@@ -41,11 +41,52 @@
                             <i class="fas fa-clipboard-list w-6"></i> Data Laporan
                         </a>
                     </li>
+                    </li>
+                    
+                    </li>
+                    
+                    <!-- MASTER DATA (Permission-based) -->
+                    <?php $perms = session()->get('permissions') ?? []; ?>
+                    
+                    <?php if(in_array('manage_areas', $perms)): ?>
                     <li>
                         <a href="<?= base_url('admin/polygons') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (uri_string() == 'admin/polygons') ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
                             <i class="fas fa-map-marked-alt w-6"></i> Manajemen Area
                         </a>
                     </li>
+                    <?php endif; ?>
+
+                    <?php if(in_array('manage_offices', $perms)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/kantor') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (strpos(uri_string(), 'admin/kantor') !== false) ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
+                            <i class="fas fa-building w-6"></i> Manajemen Kantor
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if(in_array('manage_types', $perms)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/types') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (strpos(uri_string(), 'admin/types') !== false) ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
+                            <i class="fas fa-tags w-6"></i> Tipe / Label Kantor
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if(in_array('manage_users', $perms)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/users') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (strpos(uri_string(), 'admin/users') !== false) ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
+                            <i class="fas fa-users w-6"></i> Manajemen User
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if(in_array('manage_roles', $perms)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/roles') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (strpos(uri_string(), 'admin/roles') !== false) ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
+                            <i class="fas fa-user-shield w-6"></i> Manajemen Role
+                        </a>
+                    </li>
+                    <?php endif; ?>
                     <!-- Add more menu items here -->
                 </ul>
             </nav>

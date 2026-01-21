@@ -33,7 +33,7 @@ class AddPolygonsTable extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('polygons');
+        $this->forge->createTable('polygons', true);
     }
 
     public function down()

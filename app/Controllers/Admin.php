@@ -116,6 +116,12 @@ class Admin extends BaseController
         $data['filter_status'] = $filterStatus;
         $data['filter_polygon_id'] = $filterPolygonId;
         
+        // Fetch Offices for Map
+        $data['offices'] = $db->table('master_kantor')
+            ->select('master_kantor.*, master_types.nama_tipe, master_types.warna')
+            ->join('master_types', 'master_types.id = master_kantor.type_id', 'left')
+            ->get()->getResultArray();
+
         $data['title'] = 'Dashboard Admin';
         $data['user'] = $this->session->get();
 

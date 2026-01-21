@@ -59,17 +59,17 @@ class Pengaduan extends BaseController
         $currentLat = !empty($input['latitude']) ? (float)$input['latitude'] : (float)$defaultLat;
         $currentLng = !empty($input['longitude']) ? (float)$input['longitude'] : (float)$defaultLng;
 
-        // 2. Logic Auto Routing
-        $idKantorTujuan = null;
-        if (!empty($input['nama_kecamatan'])) {
-            // Try specific lookup
-            $idKantorTujuan = $this->coverageModel->getKantorByKecamatan($input['nama_kecamatan']);
-        }
+        // 2. Logic Auto Routing (Nearest Office)
+        // Replaces old "Coverage Area" logic as primary method if lat/long exists.
+        // If specific coverage via kecamatan exists, we could prefer that, but User request says "Based on distance".
+        // Let's TRY generic distance first.
         
-        // If still null (Reverse geocode failed or Kecamatan not in DB COVERAGE), default to NULL (Manual Review)
-        // or a specific fallback office if logic dictates. 
-        // User logic: "If GPS fails and user types manual address, assign to a 'Default/Pending' branch for manual review."
-        // Leaving id_kantor_tujuan as NULL satisfies "Manual Review" (admin sees no office assigned).
+        $kantorModel = new \App\Models\KantorModel();
+        $nearestOffice = $kantorModel->getNearestOffice($currentLat, $currentLng);
+        $idKantorTujuan = $nearestOffice ? $nearestOffice['id'] : null;
+
+        // Fallback: If no lat/long (0,0) or no nearest found, try Kecamatan match?
+        // But user explicitly asked for Distance Based. So we stick to that first.
 
         // 3. Logic GIS (Haversine Formula) - Radius Alert
         // Only run if we valid lat/long (not 0,0 default)
@@ -99,20 +99,22 @@ class Pengaduan extends BaseController
             }
         }
 
-        // Combine Jenis Aduan into Isi Laporan for storage
-        $finalIsiLaporan = "[Gangguan: " . $input['jenis_aduan'] . "] " . ($input['alamat_detail'] ?? ''); // Simple append or just store generic text
-
+        // Combine Jenis Aduan into Isi Laporan for display, keep Detail separately
+        $finalIsiLaporan = "[Gangguan: " . $input['jenis_aduan'] . "]"; 
+        
         // 4. Save Data
         $data = [
             'nomor_tiket' => 'TRT-' . date('Ymd') . '-' . rand(1000, 9999), 
             'nama_pelapor' => $input['nama_pelapor'],
             'no_hp' => $input['no_hp'],
+            'email' => $input['email'], // New
             'nama_kecamatan' => $input['nama_kecamatan'] ?? 'Manual/Unknown',
             'alamat_detail' => $input['alamat_detail'],
             'latitude' => $currentLat,
             'longitude' => $currentLng,
-            'id_kantor_tujuan' => $idKantorTujuan,
+            'id_kantor_tujuan' => $idKantorTujuan, // Auto assigned
             'isi_laporan' => $finalIsiLaporan,
+            'detail_aduan' => $input['detail_aduan'], // New
             'status' => 'Menunggu',
             'is_urgent' => $isUrgent,
         ];

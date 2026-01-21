@@ -18,7 +18,7 @@ class InitialSchema extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey('setting_key');
-        $this->forge->createTable('system_settings');
+        $this->forge->createTable('system_settings', true);
 
         // 2. MASTER KANTOR
         $this->forge->addField([
@@ -29,7 +29,7 @@ class InitialSchema extends Migration
             'email_notifikasi' => ['type' => 'VARCHAR', 'constraint' => 100],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('master_kantor');
+        $this->forge->createTable('master_kantor', true);
 
         // 3. COVERAGE AREA
         $this->forge->addField([
@@ -39,7 +39,7 @@ class InitialSchema extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('id_kantor', 'master_kantor', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('coverage_area');
+        $this->forge->createTable('coverage_area', true);
 
         // 4. LAPORAN
         $this->forge->addField([
@@ -61,7 +61,7 @@ class InitialSchema extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('id_kantor_tujuan', 'master_kantor', 'id', 'CASCADE', 'SET NULL');
-        $this->forge->createTable('laporan');
+        $this->forge->createTable('laporan', true);
 
         // 5. USERS
         $this->forge->addField([
@@ -73,7 +73,7 @@ class InitialSchema extends Migration
             'id_kantor' => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'null' => true],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('users');
+        $this->forge->createTable('users', true);
     }
 
     public function down()

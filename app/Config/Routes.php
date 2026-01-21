@@ -27,4 +27,39 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->get('polygons', 'PolygonController::index');
     $routes->post('polygons/store', 'PolygonController::store');
     $routes->get('polygons/delete/(:num)', 'PolygonController::delete/$1');
+
+    // Kantor (Offices)
+    $routes->get('kantor', 'KantorController::index');
+    $routes->get('kantor/create', 'KantorController::create');
+    $routes->post('kantor/store', 'KantorController::store');
+    $routes->get('kantor/edit/(:num)', 'KantorController::edit/$1');
+    $routes->post('kantor/update/(:num)', 'KantorController::update/$1');
+    $routes->get('kantor/delete/(:num)', 'KantorController::delete/$1');
+    $routes->post('kantor/update/(:num)', 'KantorController::update/$1');
+    $routes->get('kantor/delete/(:num)', 'KantorController::delete/$1');
+    $routes->post('kantor/parse-map', 'KantorController::parse_maps_url');
+
+    // Office Types
+    $routes->get('types', 'TypeController::index');
+    $routes->get('types/create', 'TypeController::create');
+    $routes->post('types/store', 'TypeController::store');
+    $routes->get('types/edit/(:num)', 'TypeController::edit/$1');
+    $routes->post('types/update/(:num)', 'TypeController::update/$1');
+    $routes->post('types/update/(:num)', 'TypeController::update/$1');
+    $routes->get('types/delete/(:num)', 'TypeController::delete/$1');
+
+    // User Management
+    $routes->get('users', 'UserController::index');
+    $routes->get('users/create', 'UserController::create');
+    $routes->post('users/store', 'UserController::store');
+    $routes->get('users/edit/(:num)', 'UserController::edit/$1');
+    $routes->post('users/update/(:num)', 'UserController::update/$1');
+    $routes->get('users/delete/(:num)', 'UserController::delete/$1');
+    // Role Management
+    $routes->get('roles', 'RoleController::index');
+    $routes->get('roles/create', 'RoleController::create');
+    $routes->post('roles/store', 'RoleController::store');
+    $routes->get('roles/edit/(:num)', 'RoleController::edit/$1');
+    $routes->post('roles/update/(:num)', 'RoleController::update/$1');
+    $routes->get('roles/delete/(:num)', 'RoleController::delete/$1');
 });

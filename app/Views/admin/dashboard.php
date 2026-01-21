@@ -42,6 +42,14 @@
             <?php if($filter_status != 'default_active' || $filter_polygon_id): ?>
                 <a href="<?= base_url('admin/dashboard') ?>" class="text-sm text-red-500 hover:text-red-700 font-medium">Reset</a>
             <?php endif; ?>
+
+            <!-- Office Toggle -->
+            <div class="ml-auto flex items-center bg-white border rounded-md px-3 py-1.5 shadow-sm">
+                <input type="checkbox" id="toggleOffice" checked onchange="toggleOffices(this)" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                <label for="toggleOffice" class="ml-2 text-sm text-gray-700 font-medium cursor-pointer select-none">
+                    <i class="fas fa-building text-blue-500 mr-1"></i> Kantor
+                </label>
+            </div>
         </form>
     </div>
     <div id="adminMap" class="h-96 w-full rounded-lg z-0"></div>
@@ -312,7 +320,72 @@
         }
     }
 
-    // Recursive function to ensure [lng, lat] only
+    // --- OFFICE MARKERS LOGIC ---
+    var offices = <?= json_encode($offices) ?>;
+    var officeLayer = L.layerGroup();
+    var showOffices = true; // Default ON
+
+    var officeIcon = L.icon({
+        iconUrl: '<?= base_url('logo-tirtanadi-notext.webp') ?>',
+        iconSize: [32, 32], // Adjust size
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16],
+        className: 'office-marker-icon' // For extra CSS styling (e.g. shadow/border)
+    });
+
+    offices.forEach(function(office) {
+        if(office.latitude && office.longitude) {
+            // Optional: Circle behind icon to show Type Color
+            var color = office.warna || '#6c757d';
+            
+            // Create a custom DivIcon that combines the Image + Colored Border/Halo
+            var customIcon = L.divIcon({
+                className: 'custom-office-marker',
+                html: `<div style="
+                        width: 36px; height: 36px; 
+                        background: white; 
+                        border: 3px solid ${color}; 
+                        border-radius: 50%; 
+                        display: flex; align-items: center; justify-content: center;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                        overflow: hidden;
+                       ">
+                        <img src="<?= base_url('logo-tirtanadi-notext.webp') ?>" style="width: 24px; height: 24px; object-fit: contain;">
+                       </div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
+                popupAnchor: [0, -18]
+            });
+
+            var marker = L.marker([office.latitude, office.longitude], {icon: customIcon});
+            
+            var popup = `
+                <div class="p-2 text-center">
+                    <b class="text-gray-800 block mb-1">${office.nama_kantor}</b>
+                    <span class="text-xs text-white px-2 py-0.5 rounded-full font-bold" style="background-color: ${color}">
+                        ${office.nama_tipe || 'Kantor'}
+                    </span>
+                    <p class="text-xs text-gray-600 mt-2 text-left">${office.alamat_kantor || ''}</p>
+                </div>
+            `;
+            marker.bindPopup(popup);
+            officeLayer.addLayer(marker);
+        }
+    });
+
+    // Add by default
+    officeLayer.addTo(map);
+
+    // Toggle Function
+    function toggleOffices(checkbox) {
+        if (checkbox.checked) {
+            map.addLayer(officeLayer);
+        } else {
+            map.removeLayer(officeLayer);
+        }
+    }
+
+    // --- RECURSIVE Function ---
     function stripExtraDimensions(coords) {
         if (!Array.isArray(coords)) return coords;
         if (coords.length === 0) return coords;

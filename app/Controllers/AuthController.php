@@ -22,7 +22,11 @@ class AuthController extends BaseController
         $username = trim($this->request->getPost('username'));
         $password = trim($this->request->getPost('password'));
 
-        $user = $usersModel->where('username', $username)->first();
+        // Join to get role name and permissions
+        $user = $usersModel->select('users.*, master_roles.role_name, master_roles.permissions')
+                           ->join('master_roles', 'master_roles.id = users.role_id', 'left')
+                           ->where('username', $username)
+                           ->first();
 
         if ($user) {
             if (password_verify($password, $user['password'])) {
@@ -31,7 +35,10 @@ class AuthController extends BaseController
                     'user_id'       => $user['id'],
                     'username'      => $user['username'],
                     'nama_lengkap'  => $user['nama_lengkap'],
-                    'role'          => $user['role'],
+                    // Store role_name as 'role' for backward compatibility
+                    'role'          => $user['role_name'] ?? 'Unknown', 
+                    'role_id'       => $user['role_id'],
+                    'permissions'   => json_decode($user['permissions'] ?? '[]', true), // Load Permissions
                     'id_kantor'     => $user['id_kantor'], // NULL for Super Admin
                     'is_logged_in'  => true
                 ];
