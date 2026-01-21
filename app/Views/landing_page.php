@@ -57,12 +57,17 @@
 
     <!-- Header -->
     <div class="bg-brand-blue text-white p-6 rounded-b-3xl shadow-lg relative z-10">
+        <div class="flex items-center justify-between mb-4">
+             <img src="<?= base_url('logo-tirtanadi-notext.webp') ?>" alt="Logo" class="h-10 bg-white rounded-full p-1">
+             <a href="<?= base_url('cek-status') ?>" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-semibold transition backdrop-blur-sm border border-white/30">
+                <i class="fas fa-search-location mr-2"></i>Lacak Pengaduan
+             </a>
+        </div>
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold">Halo Tirtanadi</h1>
                 <p class="text-blue-100 text-sm">Lapor Gangguan Air Secepat Kilat</p>
             </div>
-            <img src="<?= base_url('logo-tirtanadi-notext.webp') ?>" alt="Logo" class="h-12 bg-white rounded-full p-1">
         </div>
     </div>
 
@@ -72,6 +77,18 @@
             <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mt-6 rounded shadow" role="alert">
                 <p class="font-bold">Laporan Terkirim!</p>
                 <p><?= session()->getFlashdata('success') ?></p>
+                <?php if(session()->getFlashdata('new_ticket')): ?>
+                    <p class="mt-2 text-sm">Menyiapkan dokumen bukti (PDF)...</p>
+                    <a href="<?= base_url('pengaduan/cetak/' . session()->getFlashdata('new_ticket')) ?>" target="_blank" class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700 underline decoration-none">
+                        <i class="fas fa-download mr-1"></i> Download Bukti Laporan
+                    </a>
+                    <script>
+                        // Auto Download script
+                        setTimeout(function() {
+                            window.location.href = "<?= base_url('pengaduan/cetak/' . session()->getFlashdata('new_ticket')) ?>";
+                        }, 1500); // 1.5s delay to let user realize success
+                    </script>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 

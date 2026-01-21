@@ -8,6 +8,8 @@ use CodeIgniter\Router\RouteCollection;
 // Public Routes
 $routes->get('/', 'Pengaduan::index');
 $routes->post('pengaduan/store', 'Pengaduan::store');
+$routes->get('pengaduan/cetak/(:segment)', 'Pengaduan::cetak_pdf/$1');
+$routes->get('cek-status', 'Pengaduan::cek_status');
 
 // Auth Routes
 $routes->get('login', 'AuthController::login');

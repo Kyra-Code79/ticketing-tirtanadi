@@ -119,7 +119,126 @@ class Pengaduan extends BaseController
 
         $this->laporanModel->insert($data);
 
-        return redirect()->to('/')->with('success', 'Laporan Berhasil! Petugas akan segera meluncur. Tiket: ' . $data['nomor_tiket']);
+        return redirect()->to('/')->with('success', 'Laporan Berhasil! Petugas akan segera meluncur.')->with('new_ticket', $data['nomor_tiket']);
+    }
+
+    public function cetak_pdf($nomorTiket)
+    {
+        $report = $this->laporanModel->where('nomor_tiket', $nomorTiket)->first();
+
+        if (!$report) {
+            return redirect()->to('/')->with('errors', ['Tiket tidak ditemukan']);
+        }
+
+        // Prepare Data
+        $data = [
+            'item' => $report,
+            'logo_base64' => $this->getBase64Image('logo-tirtanadi.png') // Helper to get base64
+        ];
+
+        $dompdf = new \Dompdf\Dompdf();
+        $html = view('pdf/laporan_tiket', $data);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A5', 'landscape'); // Or A4, based on preference. Ticket usually small. Let's start A4 portrait.
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Output the generated PDF to Browser
+        $dompdf->stream("Tiket-" . $nomorTiket . ".pdf", ["Attachment" => true]);
+    }
+
+    private function getBase64Image($filename)
+    {
+        $path = FCPATH . $filename; // public/logo-tirtanadi.png usually is at root public? Or public/assets?
+        // User said @[public/logo-tirtanadi.png], checks file tool: c:\laragon\www\ticketing-tirtanadi\public\logo-tirtanadi.png
+        // FCPATH points to public folder in CI4
+        
+        if (file_exists($path)) {
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $data = file_get_contents($path);
+            return 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
+        return null;
+    }
+
+    public function cek_status()
+    {
+        $keyword = $this->request->getGet('keyword');
+        $data = [
+            'keyword' => $keyword,
+            'result' => null,
+            'history' => []
+        ];
+
+        if ($keyword) {
+            $report = $this->laporanModel->select('laporan.*, master_kantor.nama_kantor')
+                ->join('master_kantor', 'master_kantor.id = laporan.id_kantor_tujuan', 'left')
+                ->where('nomor_tiket', $keyword)
+                ->first();
+            
+            if ($report) {
+                $data['result'] = $report;
+                
+                // Simulate History based on current status for UI Visualization
+                // In a real app, we would query a separate 'status_history' table.
+                // Here we infer milestones based on current status level.
+                
+                $history = [];
+                $createdAt = strtotime($report['created_at']);
+                
+                // 1. Created
+                $history[] = [
+                    'status' => 'Laporan Diterima',
+                    'desc' => 'Laporan berhasil masuk ke sistem.',
+                    'time' => date('d M Y H:i', $createdAt),
+                    'active' => true
+                ];
+
+                // 2. Verified (If status is NOT Menunggu)
+                if ($report['status'] != 'Menunggu') {
+                     $history[] = [
+                        'status' => 'Terverifikasi',
+                        'desc' => 'Laporan telah diverifikasi oleh petugas.',
+                        'time' => date('d M Y H:i', $createdAt + 3600), // Fake time +1h
+                        'active' => true
+                    ];
+                }
+
+                // 3. Process (If status is Proses/Sedang Dikerjakan or Selesai)
+                if (in_array($report['status'], ['Proses', 'Sedang Dikerjakan', 'Selesai'])) {
+                     $history[] = [
+                        'status' => 'Sedang Dikerjakan',
+                        'desc' => 'Petugas sedang melakukan perbaikan di lokasi.',
+                        'time' => date('d M Y H:i', $createdAt + 7200), // Fake time +2h
+                        'active' => true
+                    ];
+                }
+                
+                // 4. Finished (If status is Selesai) or Rejected
+                if ($report['status'] == 'Selesai') {
+                    $history[] = [
+                        'status' => 'Selesai',
+                        'desc' => 'Perbaikan telah selesai.',
+                        'time' => date('d M Y H:i', $createdAt + 18000), // Fake time +5h
+                        'active' => true
+                    ];
+                } elseif ($report['status'] == 'Ditolak') {
+                     $history[] = [
+                        'status' => 'Ditolak',
+                        'desc' => 'Laporan ditolak. Silakan hubungi call center.',
+                        'time' => date('d M Y H:i', $createdAt + 3600),
+                        'active' => true,
+                        'is_rejected' => true
+                    ];
+                }
+
+                // Reverse to show latest first
+                $data['history'] = array_reverse($history);
+            }
+        }
+
+        return view('cek_status', $data);
     }
 
     /**
