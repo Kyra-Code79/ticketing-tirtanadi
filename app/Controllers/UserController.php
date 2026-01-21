@@ -68,7 +68,17 @@ class UserController extends BaseController
             'password' => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
         ];
 
-        $this->userModel->insert($data);
+        if ($this->userModel->insert($data) === false) {
+            // Check for DB errors
+            $errors = $this->userModel->errors();
+            if (empty($errors)) {
+                // If model validation passed but DB failed (e.g. FK)
+                $dbError = $this->userModel->db->error();
+                $errors = ['database' => $dbError['message'] ?? 'Unknown database error'];
+            }
+            return redirect()->back()->withInput()->with('errors', $errors);
+        }
+        
         return redirect()->to('admin/users')->with('success', 'User berhasil ditambahkan.');
     }
 

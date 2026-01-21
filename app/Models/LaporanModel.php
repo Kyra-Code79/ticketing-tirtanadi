@@ -20,6 +20,7 @@ class LaporanModel extends Model
         'latitude',
         'longitude',
         'id_kantor_tujuan',
+        'id_teknisi',
         'isi_laporan',
         'foto_bukti',
         'status',

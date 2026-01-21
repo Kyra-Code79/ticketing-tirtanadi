@@ -43,6 +43,12 @@ class AuthController extends BaseController
                     'is_logged_in'  => true
                 ];
                 session()->set($sessionData);
+
+                // Redirect based on Role
+                if ($user['role_name'] === 'Teknisi') {
+                    return redirect()->to('/teknisi/dashboard');
+                }
+
                 return redirect()->to('/admin/dashboard');
             }
         }

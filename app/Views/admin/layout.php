@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>body { font-family: 'Inter', sans-serif; }</style>
+    <?= $this->renderSection('head') ?>
 </head>
 <body class="bg-gray-100">
     
@@ -31,6 +32,22 @@
             
             <nav class="flex-1 overflow-y-auto py-4">
                 <ul class="space-y-1 px-2">
+                    <!-- Teknisi Menu -->
+                    <?php if(session()->get('role') === 'Teknisi'): ?>
+                    <li>
+                        <a href="<?= base_url('teknisi/dashboard') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (strpos(uri_string(), 'teknisi/dashboard') !== false) ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
+                            <i class="fas fa-home w-6"></i> Dashboard Teknisi
+                        </a>
+                    </li>
+                    <li>
+                        <!-- Reuse Dashboard or separate list? Using Dashboard as main internal list for now -->
+                         <a href="<?= base_url('teknisi/dashboard') ?>#tugas-saya" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition">
+                            <i class="fas fa-clipboard-list w-6"></i> Daftar Laporan
+                        </a>
+                    </li>
+                    <?php else: ?>
+
+                    <!-- Admin Menu (Super Admin & Admin Cabang) -->
                     <li>
                         <a href="<?= base_url('admin/dashboard') ?>" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition <?= (uri_string() == 'admin/dashboard') ? 'bg-blue-50 text-blue-600 font-semibold' : '' ?>">
                             <i class="fas fa-home w-6"></i> Dashboard
@@ -41,6 +58,7 @@
                             <i class="fas fa-clipboard-list w-6"></i> Data Laporan
                         </a>
                     </li>
+                    <?php endif; ?>
                     </li>
                     
                     </li>

@@ -103,6 +103,50 @@
             </form>
         </div>
 
+        <!-- Assignment Card (Admin Only) -->
+        <?php if(($user['role'] == 'Super Admin' || $user['role'] == 'Admin Cabang') && in_array($item['status'], ['Menunggu', 'Terverifikasi'])): ?>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-gray-900 font-bold mb-4 border-b pb-2">Tugaskan Teknisi</h3>
+            
+            <form action="<?= base_url('admin/laporan/assign/' . $item['id']) ?>" method="post">
+                <?= csrf_field() ?>
+                
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Pilih Teknisi</label>
+                    <select name="id_teknisi" class="w-full border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" required>
+                        <option value="">-- Pilih Teknisi --</option>
+                        <?php foreach($teknisi_list as $tek): ?>
+                            <option value="<?= $tek['id'] ?>" <?= ($item['id_teknisi'] == $tek['id']) ? 'selected' : '' ?>>
+                                <?= $tek['nama_lengkap'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-sm transition active:scale-95">
+                    <i class="fas fa-hard-hat mr-2"></i> Tugaskan & Verifikasi
+                </button>
+            </form>
+        </div>
+        <?php endif; ?>
+
+        <?php if($item['id_teknisi']): ?>
+        <div class="bg-blue-50 rounded-xl border border-blue-100 p-6">
+            <h3 class="text-blue-900 font-bold mb-2">Teknisi Bertugas</h3>
+            <?php 
+                // Find teknisi name from list (or could join in controller, but list is avail here)
+                $teknisiName = 'Unknown';
+                foreach($teknisi_list as $t) { if($t['id'] == $item['id_teknisi']) $teknisiName = $t['nama_lengkap']; }
+                // Fallback if list filtered
+                if($teknisiName == 'Unknown' && $item['id_teknisi']) $teknisiName = 'ID: ' . $item['id_teknisi'];
+            ?>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-200 rounded-full text-blue-700"><i class="fas fa-user-cog"></i></div>
+                <div class="font-medium text-blue-800"><?= $teknisiName ?></div>
+            </div>
+        </div>
+        <?php endif; ?>
+        
         <!-- Reporter Info -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 class="text-gray-900 font-bold mb-4 border-b pb-2">Data Pelapor</h3>

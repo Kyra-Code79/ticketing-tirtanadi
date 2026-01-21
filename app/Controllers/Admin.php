@@ -266,10 +266,23 @@ class Admin extends BaseController
             return redirect()->to('admin/laporan')->with('error', 'Anda tidak memiliki akses ke laporan ini.');
         }
 
+        // Fetch Technicians for Dropdown
+        $teknisiBuilder = new \App\Models\UsersModel();
+        $teknisiBuilder->select('users.*')
+                       ->join('master_roles', 'master_roles.id = users.role_id')
+                       ->where('master_roles.role_name', 'Teknisi');
+        
+        if ($role !== 'Super Admin' && $idKantor) {
+            $teknisiBuilder->where('users.id_kantor', $idKantor);
+        }
+        
+        $teknisiList = $teknisiBuilder->findAll();
+
         $data = [
             'title' => 'Detail Laporan - ' . $report['nomor_tiket'],
             'user' => $this->session->get(),
-            'item' => $report
+            'item' => $report,
+            'teknisi_list' => $teknisiList
         ];
 
         return view('admin/laporan/detail', $data);
@@ -287,5 +300,16 @@ class Admin extends BaseController
         $this->laporanModel->update($id, ['status' => $status]);
 
         return redirect()->back()->with('success', 'Status laporan berhasil diperbarui.');
+    }
+    public function assign_teknisi($id)
+    {
+        $idTeknisi = $this->request->getPost('id_teknisi');
+        
+        $this->laporanModel->update($id, [
+            'id_teknisi' => $idTeknisi,
+            'status' => 'Terverifikasi'
+        ]);
+
+        return redirect()->back()->with('success', 'Laporan berhasil diserahkan ke Teknisi.');
     }
 }

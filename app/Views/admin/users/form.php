@@ -91,6 +91,18 @@
         }
     }
 
+    const usernameInput = document.querySelector('input[name="username"]');
+    if(usernameInput) {
+        usernameInput.addEventListener('input', function(e) {
+            // Remove non-alphanumeric characters
+            let val = this.value;
+            let sanitized = val.replace(/[^a-zA-Z0-9]/g, '');
+            if(val !== sanitized) {
+                this.value = sanitized;
+            }
+        });
+    }
+
     roleSelect.addEventListener('change', toggleKantor);
     toggleKantor(); // Run on init
 </script>

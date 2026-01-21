@@ -62,4 +62,13 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->get('roles/edit/(:num)', 'RoleController::edit/$1');
     $routes->post('roles/update/(:num)', 'RoleController::update/$1');
     $routes->get('roles/delete/(:num)', 'RoleController::delete/$1');
+    
+    // Assignment
+    $routes->post('laporan/assign/(:num)', 'Admin::assign_teknisi/$1');
+});
+
+// Teknisi Routes
+$routes->group('teknisi', ['filter' => 'auth'], function($routes) {
+    $routes->get('dashboard', 'TeknisiController::index');
+    $routes->post('update-status/(:num)', 'TeknisiController::update_status/$1');
 });
