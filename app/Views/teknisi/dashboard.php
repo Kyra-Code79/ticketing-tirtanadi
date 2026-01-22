@@ -32,6 +32,9 @@
                     </div>
                     
                     <h3 class="font-bold text-gray-800 mb-1"><?= esc($task['nama_pelapor']) ?></h3>
+                    <?php if(!empty($task['no_pelanggan'])): ?>
+                        <div class="text-xs text-blue-600 font-bold mb-1">NPA: <?= esc($task['no_pelanggan']) ?></div>
+                    <?php endif; ?>
                     <p class="text-sm text-gray-600 mb-2 truncate"><?= esc($task['alamat_detail']) ?></p>
                     
                     <div class="flex gap-2 mt-3">

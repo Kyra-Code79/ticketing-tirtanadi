@@ -13,8 +13,10 @@ class LaporanModel extends Model
     protected $useSoftDeletes   = false;
     protected $allowedFields    = [
         'nomor_tiket',
+        'no_pelanggan',
         'nama_pelapor',
         'no_hp',
+        'email',
         'nama_kecamatan',
         'alamat_detail',
         'latitude',
@@ -22,6 +24,7 @@ class LaporanModel extends Model
         'id_kantor_tujuan',
         'id_teknisi',
         'isi_laporan',
+        'detail_aduan',
         'foto_bukti',
         'status',
         'is_urgent',

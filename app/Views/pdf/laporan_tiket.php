@@ -23,8 +23,10 @@
 </head>
 <body>
     <div class="header">
-        <?php if($logo_base64): ?>
+        <?php if(!empty($logo_base64)): ?>
             <img src="<?= $logo_base64 ?>" class="logo" alt="Logo">
+        <?php else: ?>
+            <div style="font-weight:bold; font-size:20px; display:inline-block; margin-right:15px;">[LOGO]</div>
         <?php endif; ?>
         <span class="company-name">PERUMDA TIRTANADI</span>
     </div>
@@ -43,15 +45,19 @@
             <td><?= esc($item['nama_pelapor']) ?></td>
         </tr>
         <tr>
+            <th>Email</th>
+            <td><?= !empty($item['email']) ? esc($item['email']) : '-' ?></td>
+        </tr>
+        <tr>
             <th>Waktu Lapor</th>
             <td><?= date('d F Y H:i', strtotime($item['created_at'])) ?></td>
         </tr>
         <tr>
-            <th>Lokasi</th>
+            <th>Wilayah</th>
             <td><?= esc($item['nama_kecamatan']) ?></td>
         </tr>
          <tr>
-            <th>Alamat</th>
+            <th>Alamat Lengkap</th>
             <td><?= esc($item['alamat_detail']) ?></td>
         </tr>
         <tr>

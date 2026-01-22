@@ -94,11 +94,17 @@
 
         <?php if(session()->getFlashdata('errors')): ?>
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-6 rounded shadow" role="alert">
-                <p class="font-bold">Ada Kesalahan Data</p>
+                <p class="font-bold">Gagal Mengirim Laporan:</p>
+                <ul class="list-disc pl-5 mt-2 text-sm">
+                    <?php foreach(session()->getFlashdata('errors') as $error): ?>
+                        <li><?= esc($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
         <?php endif; ?>
 
         <form action="<?= base_url('pengaduan/store') ?>" method="POST" id="complaintForm" class="mt-6 space-y-6">
+            <?= csrf_field() ?>
             
             <!-- SECTION 1: DATA PELAPOR -->
             <div class="bg-white p-6 rounded-2xl shadow-card">
@@ -110,11 +116,17 @@
                 <label class="block text-gray-600 font-medium mb-1">Nama Lengkap</label>
                 <input type="text" name="nama_pelapor" class="input-large focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Budi Santoso" value="<?= old('nama_pelapor') ?>" required>
 
+                <label class="block text-gray-600 font-medium mb-1">Nomor NPA / Pelanggan (Jika Ada)</label>
+                <input type="text" name="no_pelanggan" class="input-large focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 12345678" value="<?= old('no_pelanggan') ?>">
+
                 <label class="block text-gray-600 font-medium mb-1">Nomor HP / WhatsApp</label>
                 <input type="tel" name="no_hp" class="input-large focus:ring-2 focus:ring-blue-500 outline-none" placeholder="08xxxxxxxxxx" value="<?= old('no_hp') ?>" required>
 
+                <label class="block text-gray-600 font-medium mb-1">Email (Opsional)</label>
+                <input type="email" name="email" class="input-large focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: email@anda.com" value="<?= old('email') ?>">
+
                 <label class="block text-gray-600 font-medium mb-1">Jenis Gangguan</label>
-                <select name="jenis_aduan" class="input-large bg-white focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <select name="jenis_aduan" id="jenis_aduan" class="input-large bg-white focus:ring-2 focus:ring-blue-500 outline-none" required>
                     <option value="" disabled selected>Pilih Masalah...</option>
                     <option value="Air Mati">Air Mati Total</option>
                     <option value="Air Kecil">Air Keluar Kecil</option>
@@ -123,6 +135,12 @@
                     <option value="Meteran Rusak">Meteran Rusak</option>
                     <option value="Lainnya">Lainnya</option>
                 </select>
+                
+                <!-- Custom Input for Lainnya -->
+                <div id="custom_aduan_container" class="hidden mt-2">
+                    <label class="block text-gray-600 font-medium mb-1">Jelaskan Masalahnya Secara Detail</label>
+                    <textarea name="jenis_aduan_custom" id="jenis_aduan_custom" rows="3" class="input-large focus:ring-2 focus:ring-blue-500 outline-none border-blue-300" placeholder="Contoh: Pipa bocor besar di depan pagar rumah..."></textarea>
+                </div>
             </div>
 
             <!-- SECTION 2: LOKASI (MAGIC SECTION) -->
@@ -175,6 +193,22 @@
         const mapDiv = document.getElementById('map');
         const statusDiv = document.getElementById('locationStatus');
         const alamatInput = document.getElementById('alamat_detail');
+        
+        // Dropdown Logic
+        const jenisAduanSelect = document.getElementById('jenis_aduan');
+        const customAduanDiv = document.getElementById('custom_aduan_container');
+        const customAduanInput = document.getElementById('jenis_aduan_custom');
+
+        jenisAduanSelect.addEventListener('change', function() {
+            if(this.value === 'Lainnya') {
+                customAduanDiv.classList.remove('hidden');
+                customAduanInput.required = true;
+            } else {
+                customAduanDiv.classList.add('hidden');
+                customAduanInput.required = false;
+                customAduanInput.value = ''; // Clear value
+            }
+        });
         
         // Modal Elements
         const modal = document.createElement('div');

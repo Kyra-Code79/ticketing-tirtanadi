@@ -54,6 +54,9 @@
                         </td>
                         <td class="px-6 py-4 align-top">
                             <div class="font-medium text-gray-800"><?= esc($item['nama_pelapor']) ?></div>
+                            <?php if(!empty($item['no_pelanggan'])): ?>
+                                <div class="text-xs text-blue-600 font-semibold mt-0.5">NPA: <?= esc($item['no_pelanggan']) ?></div>
+                            <?php endif; ?>
                             <div class="text-xs text-gray-500 mt-0.5"><?= esc($item['no_hp']) ?></div>
                         </td>
                         <td class="px-6 py-4 align-top">

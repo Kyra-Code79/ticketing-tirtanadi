@@ -100,49 +100,61 @@ class Pengaduan extends BaseController
         }
 
         // Combine Jenis Aduan into Isi Laporan for display, keep Detail separately
-        $finalIsiLaporan = "[Gangguan: " . $input['jenis_aduan'] . "]"; 
+        // Combine Jenis Aduan into Isi Laporan for display, keep Detail separately
+        $jenisAduan = $input['jenis_aduan'];
+        if ($jenisAduan === 'Lainnya' && !empty($input['jenis_aduan_custom'])) {
+            $jenisAduan = "Lainnya: " . $input['jenis_aduan_custom'];
+        }
+        $finalIsiLaporan = "[Gangguan: " . $jenisAduan . "]"; 
         
         // 4. Save Data
         $data = [
             'nomor_tiket' => 'TRT-' . date('Ymd') . '-' . rand(1000, 9999), 
+            'no_pelanggan' => $input['no_pelanggan'] ?? null,
             'nama_pelapor' => $input['nama_pelapor'],
             'no_hp' => $input['no_hp'],
-            'email' => $input['email'], // New
+            'email' => $input['email'] ?? null,
             'nama_kecamatan' => $input['nama_kecamatan'] ?? 'Manual/Unknown',
             'alamat_detail' => $input['alamat_detail'],
             'latitude' => $currentLat,
             'longitude' => $currentLng,
             'id_kantor_tujuan' => $idKantorTujuan, // Auto assigned
             'isi_laporan' => $finalIsiLaporan,
-            'detail_aduan' => $input['detail_aduan'], // New
+            'detail_aduan' => $input['detail_aduan'] ?? '', // New
             'status' => 'Menunggu',
             'is_urgent' => $isUrgent,
         ];
 
-        $this->laporanModel->insert($data);
+        if ($this->laporanModel->insert($data) === false) {
+            // Log Error
+            $errors = $this->laporanModel->errors();
+            log_message('error', 'Gagal Simpan Laporan: ' . json_encode($errors));
+            return redirect()->back()->withInput()->with('errors', ['Gagal menyimpan data ke server. Mohon coba lagi.']);
+        }
 
         return redirect()->to('/')->with('success', 'Laporan Berhasil! Petugas akan segera meluncur.')->with('new_ticket', $data['nomor_tiket']);
     }
 
     public function cetak_pdf($nomorTiket)
     {
+        log_message('error', 'Attempting to print PDF for Ticket: ' . $nomorTiket);
+        $nomorTiket = urldecode($nomorTiket); 
         $report = $this->laporanModel->where('nomor_tiket', $nomorTiket)->first();
-
+        
         if (!$report) {
-            return redirect()->to('/')->with('errors', ['Tiket tidak ditemukan']);
+            return redirect()->to('/')->with('errors', ['Tiket "' . esc($nomorTiket) . '" tidak ditemukan di Database.']);
         }
 
         // Prepare Data
         $data = [
             'item' => $report,
-            'logo_base64' => $this->getBase64Image('logo-tirtanadi.png') // Helper to get base64
+            'logo_base64' => $this->getBase64Image('logo-tirtanadi.png')
         ];
 
         $dompdf = new \Dompdf\Dompdf();
         $html = view('pdf/laporan_tiket', $data);
         
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('A5', 'landscape'); // Or A4, based on preference. Ticket usually small. Let's start A4 portrait.
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
@@ -152,16 +164,42 @@ class Pengaduan extends BaseController
 
     private function getBase64Image($filename)
     {
-        $path = FCPATH . $filename; // public/logo-tirtanadi.png usually is at root public? Or public/assets?
-        // User said @[public/logo-tirtanadi.png], checks file tool: c:\laragon\www\ticketing-tirtanadi\public\logo-tirtanadi.png
-        // FCPATH points to public folder in CI4
-        
-        if (file_exists($path)) {
-            $type = pathinfo($path, PATHINFO_EXTENSION);
-            $data = file_get_contents($path);
-            return 'data:image/' . $type . ';base64,' . base64_encode($data);
+        // Daftar kemungkinan lokasi file (urutkan dari yang paling mungkin)
+        // FCPATH di CI4 mengarah ke folder 'public'
+        $possiblePaths = [
+            FCPATH . $filename,                        // public/logo-tirtanadi.png
+            FCPATH . 'assets/img/' . $filename,        // public/assets/img/logo-tirtanadi.png
+            FCPATH . 'assets/images/' . $filename,     // public/assets/images/logo-tirtanadi.png
+            FCPATH . 'images/' . $filename,            // public/images/logo-tirtanadi.png
+            FCPATH . 'img/' . $filename,               // public/img/logo-tirtanadi.png
+            ROOTPATH . 'public/' . $filename,          // Alternatif path public
+        ];
+
+        $foundPath = null;
+
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $foundPath = $path;
+                break;
+            }
         }
-        return null;
+
+        // Jika file tidak ditemukan sama sekali
+        if (!$foundPath) {
+            log_message('error', 'PDF Logo not found. Checked paths: ' . implode(', ', $possiblePaths));
+            return null; // Biarkan kosong atau return placeholder
+        }
+
+        // Proses Encode ke Base64
+        $type = pathinfo($foundPath, PATHINFO_EXTENSION);
+        $data = file_get_contents($foundPath);
+
+        if ($data === false) {
+            log_message('error', 'Failed to read image file: ' . $foundPath);
+            return null;
+        }
+
+        return 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
 
     public function cek_status()
